@@ -1,43 +1,63 @@
 package main
 
 import (
+	"bytes"
+	"github.com/hajimehoshi/ebiten/examples/resources/images"
+	"image"
 	_ "image/png"
 	"log"
 
 	"github.com/hajimehoshi/ebiten"
-	"github.com/hajimehoshi/ebiten/ebitenutil"
 )
 
-var img *ebiten.Image
+const (
+	screenWidth = 320
+	screenHeight = 240
 
-func init() {
-	var err error
-	img, _, err = ebitenutil.NewImageFromFile("gopher.png", ebiten.FilterDefault)
-	if err != nil {
-		log.Fatal(err)
-	}
+	frameOX = 0
+	frameOY = 32
+	frameWidth = 32
+	frameHeight = 32
+	frameNum = 8
+)
+var (
+	runnerImage *ebiten.Image
+)
+
+type Game struct{
+	count int
 }
-
-type Game struct{}
 
 func (g *Game) Update(screen *ebiten.Image) error {
-	return nil
+	g.count++
+	return nil;
 }
+
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(100, 10)
-	op.GeoM.Scale(1.5, 1)
-	screen.DrawImage(img, op)
+	op.GeoM.Translate(-float64(frameWidth)/2, -float64(frameHeight)/2)
+	op.GeoM.Translate(screenWidth/2, screenHeight/2)
+	i := (g.count / 2) % frameNum
+	sx, sy := frameOX + i * frameWidth, frameOY
+	
+	screen.DrawImage(runnerImage.SubImage(image.Rect(sx, sy, sx + frameWidth, sy + frameHeight)).(*ebiten.Image), op)
 }
 
-func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
-	return 640, 480
+func (g *Game) Layout(outsideWidth, outsideHeight int) (int,  int) {
+	return screenWidth, screenHeight
 }
 
 func main() {
-	ebiten.SetWindowSize(640, 480)
-	ebiten.SetWindowTitle("Geo Matrix")
+	img, _, err := image.Decode(bytes.NewReader(images.Runner_png))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	runnerImage, _ = ebiten.NewImageFromImage(img, ebiten.FilterDefault)
+
+	ebiten.SetWindowSize(screenWidth * 2, screenHeight * 2)
+	ebiten.SetWindowTitle("Animation (Ebiten Demo)")
 	if err := ebiten.RunGame(&Game{}); err != nil {
 		log.Fatal(err)
 	}
