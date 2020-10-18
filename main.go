@@ -25,16 +25,19 @@ func (g *Game) Update(screen *ebiten.Image) error {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	screen.DrawImage(img, nil)
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Translate(100, 10)
+	op.GeoM.Scale(1.5, 1)
+	screen.DrawImage(img, op)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
-	return 320, 240
+	return 640, 480
 }
 
 func main() {
 	ebiten.SetWindowSize(640, 480)
-	ebiten.SetWindowTitle("Render an image")
+	ebiten.SetWindowTitle("Geo Matrix")
 	if err := ebiten.RunGame(&Game{}); err != nil {
 		log.Fatal(err)
 	}
